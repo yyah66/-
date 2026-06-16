@@ -30,10 +30,30 @@
 
 ## 运行方式
 
+### 前置步骤：修改 .env 配置
+
+无论本地还是 AutoDL 运行，都请先编辑项目根目录下的 `.env` 文件，按实际环境修改以下配置：
+
+```bash
+# 模型路径：改为你自己的模型存放路径
+LOCAL_MODEL_PATH=/your/path/to/Qwen2.5-VL-7B-Instruct
+
+# 模型名称：与你下载的模型一致
+VLM_MODEL=Qwen2.5-VL-7B-Instruct
+
+# LoRA 适配器路径（可选，留空则使用基座模型）
+LORA_PATH=outputs/lora/merged_ocr/final_adapter
+```
+
+### 本地运行
+
 1. 安装依赖
 
 ```bash
 pip install -r requirements.txt
+
+# 本地 GPU 推理额外依赖（如使用 local 模式）
+pip install transformers torch torchvision accelerate bitsandbytes peft
 ```
 
 2. 启动应用
@@ -42,13 +62,43 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-3. 如果你有 DashScope API Key，可以配置环境变量后启用真实模型推理
+3. 如果你有 DashScope API Key，可将 `.env` 中 `VLM_PROVIDER` 改为 `dashscope` 以启用云端推理。
+
+### AutoDL 运行
+
+1. 将项目上传至 `/root/autodl-tmp/` 目录
+
+2. 安装依赖
 
 ```bash
-set DASHSCOPE_API_KEY=你的APIKey
-set VLM_PROVIDER=dashscope
-set VLM_MODEL=qwen2.5-vl-7b-instruct
+cd /root/autodl-tmp/--main
+pip install -r requirements.txt
+pip install transformers torch torchvision accelerate bitsandbytes peft
 ```
+
+3. 下载模型（如尚未下载）
+
+```bash
+pip install modelscope
+modelscope download --model Qwen/Qwen2.5-VL-7B-Instruct --local_dir /root/autodl-tmp/models/qwen/Qwen2.5-VL-7B-Instruct
+```
+
+4. 启动应用
+
+```bash
+streamlit run app.py \
+  --server.port 6006 \
+  --server.address 0.0.0.0 \
+  --server.enableCORS false \
+  --server.enableXsrfProtection false
+```
+
+5. 通过 AutoDL「自定义服务」按钮访问，或直接访问 `http://<实例公网IP>:6006`。
+
+> 如果需要在终端关闭后保持运行，使用 nohup：
+> ```bash
+> nohup streamlit run app.py --server.port 6006 --server.address 0.0.0.0 --server.enableCORS false --server.enableXsrfProtection false > streamlit.log 2>&1 &
+> ```
 
 ## 关键环境变量
 

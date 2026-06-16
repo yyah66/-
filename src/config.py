@@ -2,7 +2,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import os
+from pathlib import Path
 from typing import Any
+
+try:
+    from dotenv import load_dotenv
+    _ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
+    if _ENV_PATH.exists():
+        load_dotenv(_ENV_PATH)
+except ImportError:
+    pass
 
 
 @dataclass
@@ -23,10 +32,13 @@ class AppConfig:
         default_factory=lambda: os.getenv("DASHSCOPE_API_KEY", "").strip() or os.getenv("OPENAI_API_KEY", "").strip()
     )
     local_model_path: str = field(
-        default_factory=lambda: os.getenv("LOCAL_MODEL_PATH", "Qwen/Qwen2.5-VL-7B-Instruct").strip()
+        default_factory=lambda: os.getenv("LOCAL_MODEL_PATH", "/root/autodl-tmp/models/qwen/Qwen2.5-VL-7B-Instruct").strip()
     )
     local_device: str = field(
         default_factory=lambda: os.getenv("LOCAL_DEVICE", "auto").strip()
+    )
+    load_in_4bit: bool = field(
+        default_factory=lambda: os.getenv("LOAD_IN_4BIT", "1").strip().lower() in ("1", "true", "yes")
     )
     lora_path: str = field(
         default_factory=lambda: os.getenv("LORA_PATH", "").strip()
